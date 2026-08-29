@@ -1,15 +1,12 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// Protect routes: verify JWT from Authorization header
+// Protect routes: verify JWT from cookies
 exports.protect = async (req, res, next) => {
   let token;
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    token = req.headers.authorization.split(' ')[1];
+  if (req.cookies && req.cookies.token) {
+    token = req.cookies.token;
   }
 
   if (!token) {

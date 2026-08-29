@@ -7,24 +7,20 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Validate existing JWT token on startup and fetch user details
+  // Hydrate user session on app boot from HttpOnly cookies
   useEffect(() => {
     const loadUser = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const res = await API.get('/auth/me');
-          if (res.data.success) {
-            setUser(res.data.user);
-          } else {
-            localStorage.removeItem('token');
-          }
-        } catch (err) {
-          console.error('Token validation failed:', err);
-          localStorage.removeItem('token');
+      try {
+        const res = await API.get('/auth/me');
+        if (res.data.success) {
+          setUser(res.data.user);
         }
+      } catch (err) {
+        // Cookie is expired, invalid, or missing - user is unauthenticated
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     loadUser();
@@ -36,7 +32,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await API.post('/auth/login', { email, password });
       if (res.data.success) {
-        localStorage.setItem('token', res.data.token);
         setUser(res.data.user);
         return { success: true };
       }
@@ -50,14 +45,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Handle user registration
-  const register = async (name, email, password, role, phone) => {
+  // Handle user registration (returns success, forces manual login)
+  const register = async (name, email, password, phone, gender, address) => {
     setLoading(true);
     try {
-      const res = await API.post('/auth/register', { name, email, password, role, phone });
+      const res = await API.post('/auth/register', { name, email, password, phone, gender, address });
       if (res.data.success) {
-        localStorage.setItem('token', res.data.token);
-        setUser(res.data.user);
         return { success: true };
       }
     } catch (err) {
@@ -70,10 +63,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Handle user logout
-  const logout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
+  // Handle user logout (tells backend to clear cookie, then updates state)
+  const logout = async () => {
+    setLoading(true);
+    try {
+      await API.post('/auth/logout');
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      setUser(null);
+      setLoading(false);
+    }
   };
 
   return (

@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
@@ -15,8 +16,16 @@ const app = express();
 // Body parser middleware for parsing JSON requests
 app.use(express.json());
 
-// Enable Cross-Origin Resource Sharing (CORS)
-app.use(cors());
+// Cookie parser middleware
+app.use(cookieParser());
+
+// Enable Cross-Origin Resource Sharing (CORS) with credentials enabled
+app.use(
+  cors({
+    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    credentials: true,
+  })
+);
 
 // Health Check Endpoint
 app.get('/api/health', (req, res) => {

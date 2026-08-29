@@ -13,7 +13,10 @@ const generateToken = (id) => {
 // @access  Public
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role, phone } = req.body;
+    const { name, email, password, phone, gender, address } = req.body;
+    console.log('--- BACKEND REGISTER CONTROLLER TRIGGERED ---');
+    console.log('req.body:', req.body);
+    console.log('creating user with role: patient');
 
     // Check if user already exists
     const userExists = await User.findOne({ email });
@@ -24,27 +27,20 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Create user
-    const user = await User.create({
+    // Create user (force role to patient for public signups)
+    await User.create({
       name,
       email,
       password,
-      role,
+      role: 'patient',
       phone,
+      gender,
+      address,
     });
-
-    const token = generateToken(user._id);
 
     return res.status(201).json({
       success: true,
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        phone: user.phone,
-      },
+      message: 'Registration successful. Please sign in.',
     });
   } catch (error) {
     return res.status(500).json({
@@ -54,7 +50,7 @@ exports.register = async (req, res) => {
   }
 };
 
-// @desc    Authenticate user & get token
+// @desc    Authenticate user & get token (HttpOnly cookie)
 // @route   POST /api/auth/login
 // @access  Public
 exports.login = async (req, res) => {
@@ -78,6 +74,14 @@ exports.login = async (req, res) => {
       });
     }
 
+    // Verify account status
+    if (user.status !== 'active') {
+      return res.status(403).json({
+        success: false,
+        message: `Your account is ${user.status}. Please contact an administrator.`,
+      });
+    }
+
     // Check if password matches
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
@@ -89,15 +93,24 @@ exports.login = async (req, res) => {
 
     const token = generateToken(user._id);
 
+    // Set secure HttpOnly cookie containing the token
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days (matching token expiry)
+    });
+
     return res.status(200).json({
       success: true,
-      token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
         phone: user.phone,
+        gender: user.gender,
+        address: user.address,
       },
     });
   } catch (error) {
@@ -120,6 +133,15 @@ exports.getMe = async (req, res) => {
         message: 'User not found.',
       });
     }
+
+    // Verify account status during session check
+    if (user.status !== 'active') {
+      return res.status(403).json({
+        success: false,
+        message: 'Your account is no longer active.',
+      });
+    }
+
     return res.status(200).json({
       success: true,
       user: {
@@ -128,7 +150,33 @@ exports.getMe = async (req, res) => {
         email: user.email,
         role: user.role,
         phone: user.phone,
+        gender: user.gender,
+        address: user.address,
       },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// @desc    Logout user & clear cookie
+// @route   POST /api/auth/logout
+// @access  Public
+exports.logout = async (req, res) => {
+  try {
+    res.cookie('token', '', {
+      httpOnly: true,
+      expires: new Date(0), // Expire immediately
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Logged out successfully.',
     });
   } catch (error) {
     return res.status(500).json({

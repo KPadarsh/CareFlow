@@ -37,9 +37,23 @@ const UserSchema = new mongoose.Schema({
       'billing_officer',
       'admin',
     ],
+    default: 'patient',
     required: [true, 'Please specify a role'],
   },
+  status: {
+    type: String,
+    enum: ['active', 'suspended', 'inactive'],
+    default: 'active',
+  },
   phone: {
+    type: String,
+    trim: true,
+  },
+  gender: {
+    type: String,
+    enum: ['male', 'female'],
+  },
+  address: {
     type: String,
     trim: true,
   },

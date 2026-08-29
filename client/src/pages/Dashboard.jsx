@@ -1,5 +1,8 @@
 import React, { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import PatientPortal from './PatientPortal';
+import ReceptionPortal from './ReceptionPortal';
+import NursePortal from './NursePortal';
 import {
   Activity,
   LogOut,
@@ -23,6 +26,18 @@ const Dashboard = () => {
   const { user, logout } = useContext(AuthContext);
 
   if (!user) return null;
+
+  if (user.role === 'patient') {
+    return <PatientPortal user={user} logout={logout} />;
+  }
+
+  if (user.role === 'receptionist') {
+    return <ReceptionPortal user={user} logout={logout} />;
+  }
+
+  if (user.role === 'nurse') {
+    return <NursePortal user={user} logout={logout} />;
+  }
 
   // Retrieve custom dashboard settings and content based on user role
   const getRoleConfig = (role) => {
