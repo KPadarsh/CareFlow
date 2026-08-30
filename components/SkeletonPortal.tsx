@@ -58,7 +58,7 @@ export default function SkeletonPortal({ role, user, logout }: SkeletonPortalPro
 
         {/* Content Body */}
         <div className="flex-1 p-8 flex items-center justify-center">
-          <div className="text-center max-w-md p-8 rounded-2xl glass-panel border border-slate-200 dark:border-slate-800 shadow-xl">
+          <div className="text-center max-w-md p-8 rounded-2xl glass-panel border border-slate-200 dark:border-slate-800 shadow-xl bg-white/75 dark:bg-slate-950/75">
             <div className="mx-auto w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-6">
               <ShieldAlert className="w-8 h-8" />
             </div>

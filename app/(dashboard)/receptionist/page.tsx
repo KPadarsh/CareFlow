@@ -2,7 +2,7 @@
 
 import React from 'react';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import ReceptionPortal from '@/components/portals/ReceptionPortal';
+import ReceptionPortal from './ReceptionPortal';
 import { useAuth } from '@/context/AuthContext';
 
 export default function ReceptionistPage() {

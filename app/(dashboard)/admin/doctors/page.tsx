@@ -1,5 +1,5 @@
 import React from 'react';
-import SubPageSkeleton from '@/components/portals/SubPageSkeleton';
+import SubPageSkeleton from '@/components/SubPageSkeleton';
 
 export default function AdminDoctorsPage() {
   return (

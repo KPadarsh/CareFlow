@@ -2,7 +2,7 @@
 
 import React from 'react';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import NursePortal from '@/components/portals/NursePortal';
+import NursePortal from './NursePortal';
 import { useAuth } from '@/context/AuthContext';
 
 export default function NursePage() {

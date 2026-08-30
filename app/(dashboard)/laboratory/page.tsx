@@ -2,7 +2,7 @@
 
 import React from 'react';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import SkeletonPortal from '@/components/portals/SkeletonPortal';
+import SkeletonPortal from '@/components/SkeletonPortal';
 import { useAuth } from '@/context/AuthContext';
 
 export default function LaboratoryPage() {
